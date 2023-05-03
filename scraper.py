@@ -46,6 +46,7 @@ def add_child_nodes(body, node):
                 'children': []
             }
             node['children'].append(child_node)
+            add_child_nodes(child, child_node)
         
 
 if __name__ == '__main__':
