@@ -2666,24 +2666,8 @@ test = {
     ]
 }
 
-def search_by_id(root, id):
-    if root is None:
-        return None
-
-    if 'id' in root.get('attrs', {}) and id in root['attrs']['id'].lower():
-        return root
-
-    for child in root.get('children', []):
-        response = search_by_id(child, id)
-        if response:
-            return response
-
-    return None
-
 def search_in_attrs(element, search_param):
-    for value in element.get('attrs', {}).values():
-        if value == search_param:
-            return True
+    return search_param in element.get('attrs', {}).values()
 
 
 def find_element_path(dictionary, search_param):
