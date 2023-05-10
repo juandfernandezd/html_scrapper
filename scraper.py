@@ -52,17 +52,15 @@ class Scrapper:
                 self.add_child_nodes(child, child_node)
 
     def get_tree(self):
-        tree = {}
         root_node = {
             'name': self.body.name,
             'attrs': self.body.attrs,
             'children': []
         }
-        tree['root'] = root_node
 
         self.add_child_nodes(self.body, root_node)
 
-        return tree
+        return root_node
 
     def close(self):
         self.driver.close()
