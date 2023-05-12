@@ -62,5 +62,35 @@ class Scrapper:
 
         return root_node
 
+    def search_in_attrs(self, element, search_param):
+        return search_param in element.get('attrs', {}).values()
+
+    def find_element_path(self, dictionary, search_param):
+        def find_path_helper(dict_list, current_path, results):
+            counters = {}
+            for element in dict_list:
+                name = element['name']
+
+                if self.search_in_attrs(element, search_param):
+                    if name not in counters:
+                        counters[name] = 0
+                    counters[name] += 1
+                    results.append({name: current_path + f'/{name}[{counters[name]}]'})
+
+                if name not in counters:
+                    counters[name] = 0
+                counters[name] += 1
+
+                children = element['children']
+                if children:
+                    child_path = find_path_helper(children, current_path + f'/{name}[{counters[name]}]', results)
+                    if child_path:
+                        return child_path
+
+            return results
+
+        path = find_path_helper([dictionary], '/html', [])
+        return path if path else "Element not found."
+
     def close(self):
         self.driver.close()
