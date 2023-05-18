@@ -45,7 +45,7 @@ class Scrapper:
             if child.name is not None:
                 child_node = {
                     'name': child.name,
-                    'attrs': child.attrs,
+                    'attrs': {'text': self.get_text(child.text), **child.attrs},
                     'children': []
                 }
                 node['children'].append(child_node)
@@ -54,7 +54,8 @@ class Scrapper:
     def get_tree(self):
         root_node = {
             'name': self.body.name,
-            'attrs': self.body.attrs,
+            'attrs': {'text': self.get_text(self.body.text), **self.body.attrs},
+
             'children': []
         }
 
@@ -62,35 +63,53 @@ class Scrapper:
 
         return root_node
 
+    def get_text(self, raw_text):
+        words = raw_text.split()
+
+        sentence = ""
+        for word in words:
+            if word != "\n":
+                sentence += word + " "
+
+        return sentence.strip()
+
     def search_in_attrs(self, element, search_param):
-        return search_param in element.get('attrs', {}).values()
+        attrs = element.get('attrs', {})
+        attrs_values = [value.lower() if isinstance(value, str) else [v.lower() for v in value] for value in
+                        attrs.values()]
+        search_param = search_param.lower()
+        attrs_match = any(search_param in value for value in attrs_values)
+        return attrs_match
 
     def find_element_path(self, dictionary, search_param):
-        def find_path_helper(dict_list, current_path, results):
+        def find_path_helper(dict_list, current_path, results, used_names):
             counters = {}
             for element in dict_list:
                 name = element['name']
-
-                if self.search_in_attrs(element, search_param):
-                    if name not in counters:
-                        counters[name] = 0
-                    counters[name] += 1
-                    results.append({name: current_path + f'/{name}[{counters[name]}]'})
 
                 if name not in counters:
                     counters[name] = 0
                 counters[name] += 1
 
+                if self.search_in_attrs(element, search_param):
+                    result_name = f'{name}[{counters[name]}]'
+                    if name not in used_names:
+                        used_names[name] = set()
+                    if result_name not in used_names[name]:
+                        used_names[name].add(result_name)
+                        results.append({name: current_path + f'/{result_name}'})
+
                 children = element['children']
+
                 if children:
-                    child_path = find_path_helper(children, current_path + f'/{name}[{counters[name]}]', results)
+                    child_path = find_path_helper(children, current_path + f'/{name}[{counters[name]}]', results,
+                                                  used_names)
                     if child_path:
                         return child_path
 
-            return results
-
-        path = find_path_helper([dictionary], '/html', [])
-        return path if path else "Element not found."
+        results = []
+        find_path_helper([dictionary], '/html', results, {})
+        return results if results else "Element not found."
 
     def close(self):
         self.driver.close()
