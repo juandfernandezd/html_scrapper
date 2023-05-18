@@ -92,12 +92,17 @@ class Scrapper:
                 counters[name] += 1
 
                 if self.search_in_attrs(element, search_param):
-                    result_name = f'{name}[{counters[name]}]'
-                    if name not in used_names:
-                        used_names[name] = set()
-                    if result_name not in used_names[name]:
-                        used_names[name].add(result_name)
-                        results.append({name: current_path + f'/{result_name}'})
+                    attrs = element.get('attrs', {})
+                    if 'id' in attrs:
+                        result_info = {'name': name, 'id': attrs['id']}
+                        results.append(result_info)
+                    else:
+                        result_name = f'{name}[{counters[name]}]'
+                        if name not in used_names:
+                            used_names[name] = set()
+                        if result_name not in used_names[name]:
+                            used_names[name].add(result_name)
+                            results.append({name: current_path + f'/{result_name}'})
 
                 children = element['children']
 
