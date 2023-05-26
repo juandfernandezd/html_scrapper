@@ -25,9 +25,9 @@ async def search_selector_in_tree(search_input: URLSearchInput):
     scrapper = Scrapper(search_input.url)
     tree = scrapper.get_tree()
 
-    results = []
+    results = {}
     for search_term in search_input.search:
         result = scrapper.find_element_path(tree, search_term)
-        results.extend(result)
+        results.update({search_term: result})
     scrapper.close()
     return results
