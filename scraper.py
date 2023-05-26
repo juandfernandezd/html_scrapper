@@ -78,7 +78,12 @@ class Scrapper:
                     if name not in counters:
                         counters[name] = 0
                     counters[name] += 1
-                    results.append({name: current_path + f'/{name}[{counters[name]}]'})
+                    attrs = element.get('attrs', {})
+                    if 'id' in attrs:
+                        result_info = {'name': name, 'id': attrs['id']}
+                        results.append(result_info)
+                    else:
+                        results.append({name: current_path + f'/{name}[{counters[name]}]'})
 
                 if name not in counters:
                     counters[name] = 0
