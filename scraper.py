@@ -7,6 +7,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
+get_text_elements = []
+
 
 class Scrapper:
 
@@ -43,9 +45,10 @@ class Scrapper:
     def add_child_nodes(self, body, node):
         for child in body.children:
             if child.name is not None:
+                text = child.get_text() if not child.find() else ''
                 child_node = {
                     'name': child.name,
-                    'attrs': {'text': child.text, **child.attrs},
+                    'attrs': {'text': text, **child.attrs},
                     'children': []
                 }
                 node['children'].append(child_node)
@@ -54,7 +57,7 @@ class Scrapper:
     def get_tree(self):
         root_node = {
             'name': self.body.name,
-            'attrs': {'text': self.body.text, **self.body.attrs},
+            'attrs': self.body.attrs,
             'children': []
         }
 
